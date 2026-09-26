@@ -10,8 +10,8 @@ import json
 from dataclasses import replace
 from time import perf_counter
 
-from .config import get_settings
-from .llm import LLMError, close_client, generate_answer
+from .core.config import get_settings
+from .services.llm import LLMError, close_client, generate_answer
 
 
 async def diagnose(model: str | None = None) -> int:

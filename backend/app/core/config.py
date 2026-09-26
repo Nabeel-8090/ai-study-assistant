@@ -9,7 +9,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # backend/.env, regardless of which directory the server is started from.
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+# This file lives at app/core/config.py, so backend/ is three levels up.
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
 DEFAULT_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"

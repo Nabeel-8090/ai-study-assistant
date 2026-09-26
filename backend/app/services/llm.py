@@ -8,7 +8,7 @@ import httpx
 from google import genai
 from google.genai import errors, types
 
-from .config import Settings
+from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 

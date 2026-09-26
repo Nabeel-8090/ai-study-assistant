@@ -13,10 +13,11 @@ No database, no login. Each message is answered on its own (there is no chat mem
 basic-ai-chat/
 ├── backend/                 FastAPI + Gemini
 │   ├── app/
-│   │   ├── main.py          routes (POST /api/chat, GET /health) and CORS
-│   │   ├── llm.py           the one place that calls Gemini
-│   │   ├── schemas.py       request/response models
-│   │   └── config.py        environment settings
+│   │   ├── main.py          App factory, CORS, exception handlers
+│   │   ├── api/routes/      Route definitions (chat.py, health.py)
+│   │   ├── core/            Settings and config (config.py)
+│   │   ├── schemas/         Pydantic models (chat.py)
+│   │   └── services/        External integrations (llm.py)
 │   ├── tests/               pytest (no real Gemini calls)
 │   ├── requirements.txt
 │   └── .env.example

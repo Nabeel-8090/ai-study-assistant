@@ -51,25 +51,28 @@ In `components/Answer.tsx`, we use `react-markdown` and `remark-gfm`. These libr
 ## 3. Backend Concepts (FastAPI + Python)
 
 ### FastAPI Routing & Endpoints
-FastAPI uses Python decorators to map URLs to functions. 
-In `main.py`, `@app.post("/api/chat")` tells the server: *Whenever a POST request arrives at `/api/chat`, execute this specific async function.*
+FastAPI uses `APIRouter` to modularize endpoints. 
+In `app/api/routes/chat.py`, `@router.post("/chat")` defines the endpoint, which is then included in `main.py` via `app.include_router()`. This keeps the main application factory clean.
 
 ### Data Validation (Pydantic)
-In `schemas.py`, we define `ChatRequest` inheriting from `pydantic.BaseModel`.
+In `app/schemas/chat.py`, we define `ChatRequest` inheriting from `pydantic.BaseModel`.
 ```python
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
 ```
 When FastAPI receives JSON data, it automatically passes it through Pydantic. If a user tries to send a message that is 5,000 characters long, or an empty string, Pydantic immediately rejects it with a `422 Unprocessable Entity` HTTP error, meaning your core logic doesn't have to worry about bad data.
 
+### Dependency Injection (`Depends`)
+FastAPI allows injecting dependencies, such as application settings, directly into routes using `Depends`. In our chat route, `settings: Settings = Depends(get_settings)` dynamically injects our environment configuration without needing global imports, making the app much easier to test.
+
 ### Asynchronous Python (`async` / `await`)
 The backend is built asynchronously. When the backend sends a request to the Gemini API using `await client.aio.models.generate_content(...)`, the Python server does **not** freeze. Instead, it pauses that specific request and is free to handle other users' requests simultaneously until Gemini responds.
 
 ### Context Managers (`lifespan`)
-In `main.py`, we define a `lifespan` context manager. This runs code when the server starts, `yield`s control to the server to handle traffic, and then runs code when the server shuts down (like safely closing the HTTP client pool in `llm.close_client()`).
+In `main.py`, we define a `lifespan` context manager. This runs code when the server starts, `yield`s control to the server to handle traffic, and then runs code when the server shuts down (like safely closing the HTTP client pool in `services/llm.py`).
 
 ### Error Handling & HTTP Status Codes
-In `llm.py`, we wrap the Gemini SDK in a `try/except` block and map external SDK errors to our own `LLMError` classes. We assign specific HTTP status codes:
+In `app/services/llm.py`, we wrap the Gemini SDK in a `try/except` block and map external SDK errors to our own `LLMError` classes. In `main.py`, we use `@app.exception_handler(llm.LLMError)` to globally catch these errors and map them to specific HTTP status codes:
 - **504 Gateway Timeout**: Gemini took too long.
 - **503 Service Unavailable**: Gemini servers are down.
 - **429 Too Many Requests**: You hit your API rate limit.

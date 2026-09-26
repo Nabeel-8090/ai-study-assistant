@@ -8,8 +8,8 @@ import httpx
 from fastapi.testclient import TestClient
 from google import genai
 
-from app import llm
-from app.config import Settings, get_settings
+from app.services import llm
+from app.core.config import Settings, get_settings
 from app.main import app
 
 client = TestClient(app, raise_server_exceptions=False)
