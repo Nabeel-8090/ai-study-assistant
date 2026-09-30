@@ -64,6 +64,19 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
+  
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+  })
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme(t => t === 'light' ? 'dark' : 'light')
+  }
 
   const abortRef = useRef<AbortController | null>(null)
   const lastMessageRef = useRef<HTMLElement | null>(null)
@@ -148,17 +161,26 @@ export default function App() {
     <div className="app">
       <header className="bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <img src="/logo.svg" alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '10px', border: '2px solid var(--accent-color)' }} />
+          <img src="/favicon.png" alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
           <h1>Basic AI Chat</h1>
         </div>
-        <button
-          type="button"
-          className="ghost"
-          onClick={handleNewChat}
-          disabled={isEmpty}
-        >
-          New chat
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button type="button" className="ghost" onClick={toggleTheme} aria-label="Toggle theme" style={{ padding: '0.6rem', display: 'flex', alignItems: 'center' }}>
+            {theme === 'light' ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            )}
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            onClick={handleNewChat}
+            disabled={isEmpty}
+          >
+            New chat
+          </button>
+        </div>
       </header>
 
       <div className="scroll">

@@ -75,7 +75,7 @@ sequenceDiagram
 | FE-6 | Show a friendly error message if the request fails | Must |
 | FE-7 | Disable the Send button while a request is in progress and when the input is empty | Must |
 | FE-8 | Chat messages live in React state only (lost on page refresh) | Must |
-| FE-9 | Use custom brand colors (Primary #CC3A63, Background #F9F0E0) and a rounded SVG logo | Must |
+| FE-9 | Use custom brand colors (Primary #0F172A, Background #F8FAFC) and a simple logo | Must |
 | FE-10 | Display timestamps for both user messages and AI responses | Must |
 
 ### 6.2 Backend

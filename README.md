@@ -4,7 +4,7 @@ A minimal chatbot: **React (Vite + TypeScript) → FastAPI → Gemini → FastAP
 No database, no login. Each message is answered on its own (there is no chat memory yet).
 
 **Key Features:**
-- Custom UI theme (Crimson #CC3A63 and Cream #F9F0E0) with a modern rounded SVG logo.
+- Custom UI theme (Deep Navy #0F172A and Soft Off-White #F8FAFC) with a modern simple logo.
 - Message timestamps for precise tracking of message sent and received times.
 - Real-time Markdown rendering for AI responses with automatic code highlighting.
 - Responsive, accessible design with copy-to-clipboard functionality.
