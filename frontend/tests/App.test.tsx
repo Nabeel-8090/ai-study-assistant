@@ -1,6 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import App from '../src/App'
+import { MemoryRouter } from 'react-router-dom'
+import { AuthProvider } from '../src/auth'
+import ChatPage from '../src/pages/ChatPage'
+import { ThemeProvider } from '../src/theme'
+import * as authApi from '../src/authApi'
 import { ApiError, sendMessage } from '../src/api'
 
 vi.mock('../src/api', async (importOriginal) => ({
@@ -9,6 +13,24 @@ vi.mock('../src/api', async (importOriginal) => ({
 }))
 
 const send = vi.mocked(sendMessage)
+
+const USER = {
+  id: '1', full_name: 'Test User', username: 'tester', email: 't@example.com',
+  created_at: '2026-01-01T00:00:00Z', has_avatar: false, avatar_version: null,
+}
+
+/** The chat page as the app renders it: signed in, inside the router + providers. */
+function App() {
+  return (
+    <MemoryRouter>
+      <ThemeProvider>
+        <AuthProvider>
+          <ChatPage />
+        </AuthProvider>
+      </ThemeProvider>
+    </MemoryRouter>
+  )
+}
 
 function deferred() {
   let resolve!: (value: string) => void
@@ -24,6 +46,7 @@ function ask(text = 'hello') {
 
 beforeEach(() => {
   send.mockReset()
+  vi.spyOn(authApi, 'fetchMe').mockResolvedValue(USER)
 })
 
 describe('chat screen', () => {
@@ -57,7 +80,7 @@ describe('chat screen', () => {
   })
 
   it('aborts an in-flight request when unmounted', () => {
-    send.mockReturnValue(new Promise(() => {}))
+    send.mockReturnValue(new Promise(() => { }))
     const { unmount } = render(<App />)
     ask()
     const signal = send.mock.calls[0][1]

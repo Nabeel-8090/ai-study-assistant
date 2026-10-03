@@ -216,3 +216,106 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .empty h2 { font-size: 2rem; }
   .send { width: 40px; height: 40px; }
 }
+
+/* ======================================================================
+   V03: authentication pages, profile, avatar (uses the existing theme tokens)
+   ====================================================================== */
+.icon-btn { padding: 0.6rem; display: flex; align-items: center; }
+.profile-link { display: flex; border-radius: 50%; line-height: 0; }
+.profile-link:hover .avatar { box-shadow: 0 0 0 2px var(--accent-color); }
+
+.avatar {
+  border-radius: 50%; object-fit: cover; flex-shrink: 0; display: inline-flex;
+  align-items: center; justify-content: center; border: 1px solid var(--border-color);
+  transition: box-shadow 0.2s ease;
+}
+.avatar-initials { background: var(--accent-color); color: var(--accent-text-color); font-weight: 600; letter-spacing: 0.02em; user-select: none; }
+
+.splash {
+  min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.75rem; color: var(--text-secondary);
+}
+.splash img { width: 48px; height: 48px; border-radius: 50%; }
+
+/* ---------- Auth pages ---------- */
+.auth-page {
+  min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 1rem; position: relative; background: var(--bg-color);
+}
+.auth-top { position: absolute; top: 1rem; right: 1rem; }
+.auth-card {
+  width: 100%; max-width: 26rem; background: var(--surface-color); border: 1px solid var(--border-color);
+  border-radius: 12px; box-shadow: var(--shadow-lg); padding: 2rem 1.75rem;
+}
+.auth-logo { width: 52px; height: 52px; border-radius: 50%; display: block; margin: 0 auto 1rem; }
+.auth-card h1 { margin: 0; text-align: center; font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; }
+.auth-sub { margin: 0.4rem 0 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.95rem; }
+.auth-switch { margin: 1.25rem 0 0; text-align: center; color: var(--text-secondary); font-size: 0.95rem; }
+.auth-switch a { color: var(--text-primary); font-weight: 600; text-underline-offset: 3px; }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; margin-bottom: 0.35rem; font-size: 0.9rem; font-weight: 500; color: var(--text-primary); }
+.field input {
+  width: 100%; padding: 0.7rem 0.85rem; font-size: 1rem; border-radius: 8px;
+  background: var(--bg-color); color: var(--text-primary); border: 1px solid var(--border-color);
+  transition: border-color 0.2s, box-shadow 0.2s; min-width: 0;
+}
+.field input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent); }
+.field input[aria-invalid='true'] { border-color: #d32f2f; }
+.input-row { display: flex; gap: 0.5rem; align-items: stretch; }
+.input-row input { flex: 1; }
+.show-btn {
+  padding: 0 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--surface-color);
+  color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;
+}
+.show-btn:hover { color: var(--text-primary); }
+.field-msg { margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--text-secondary); min-height: 1.2em; }
+.field-msg.bad { color: #d32f2f; }
+.field-msg.good { color: #2e7d32; }
+[data-theme='dark'] .field-msg.bad { color: #ff8a80; }
+[data-theme='dark'] .field-msg.good { color: #81c784; }
+
+.notice { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.92rem; border: 1px solid; }
+.notice.ok { color: #1b5e20; background: color-mix(in srgb, #2e7d32 12%, transparent); border-color: color-mix(in srgb, #2e7d32 40%, transparent); }
+.notice.bad { color: #b71c1c; background: color-mix(in srgb, #d32f2f 10%, transparent); border-color: color-mix(in srgb, #d32f2f 40%, transparent); }
+[data-theme='dark'] .notice.ok { color: #a5d6a7; }
+[data-theme='dark'] .notice.bad { color: #ff8a80; }
+
+button.primary {
+  width: 100%; padding: 0.8rem 1rem; border-radius: 8px; font-weight: 600; font-size: 1rem;
+  background: var(--accent-color); color: var(--accent-text-color); box-shadow: var(--shadow-sm);
+}
+button.primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+button.danger {
+  width: 100%; padding: 0.8rem 1rem; border-radius: 8px; font-weight: 600; font-size: 1rem;
+  background: transparent; color: #d32f2f; border: 1px solid #d32f2f;
+}
+button.danger:hover { background: #d32f2f; color: #fff; }
+[data-theme='dark'] button.danger { color: #ff8a80; border-color: #ff8a80; }
+[data-theme='dark'] button.danger:hover { background: #d32f2f; color: #fff; border-color: #d32f2f; }
+
+/* ---------- Profile ---------- */
+.back-link { color: var(--text-primary); font-weight: 500; text-decoration: none; }
+.back-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.profile { max-width: 34rem; margin: 0 auto; padding: 2rem 1rem 3rem; }
+.profile-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-md); padding: 1.75rem; }
+.profile-head { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.25rem; min-width: 0; }
+.profile-id { min-width: 0; }
+.profile-id h1 { margin: 0; font-size: 1.5rem; font-weight: 600; overflow-wrap: anywhere; }
+.muted { margin: 0.1rem 0 0; color: var(--text-secondary); overflow-wrap: anywhere; }
+.avatar-actions { display: flex; gap: 0.6rem; margin-bottom: 1rem; }
+.avatar-actions .primary { width: auto; flex: 1; }
+.details { margin: 1.25rem 0 1.5rem; border-top: 1px solid var(--border-color); }
+.details > div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--border-color); }
+.details dt { color: var(--text-secondary); flex-shrink: 0; }
+.details dd { margin: 0; text-align: right; font-weight: 500; overflow-wrap: anywhere; min-width: 0; }
+
+@media (max-width: 480px) {
+  .auth-card { padding: 1.5rem 1.15rem; border-radius: 10px; }
+  .profile-card { padding: 1.25rem; }
+  .profile-head { flex-direction: column; text-align: center; }
+  .details > div { flex-direction: column; gap: 0.15rem; }
+  .details dd { text-align: left; }
+  .avatar-actions { flex-direction: column; }
+  .bar h1 { font-size: 1.05rem; }
+}

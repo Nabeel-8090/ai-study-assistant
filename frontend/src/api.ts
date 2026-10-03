@@ -1,6 +1,6 @@
 import type { ChatRequest, ChatResponse } from './types'
 
-const API_BASE_URL = String(
+export const API_BASE_URL = String(
   import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000',
 ).trim().replace(/\/+$/, '')
 
@@ -9,11 +9,16 @@ const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_REQUEST_TIMEOUT_SECONDS ?
 /** An error whose message is safe to show directly to the user. */
 export class ApiError extends Error {
   readonly retryable: boolean
+  readonly status?: number
+  /** Per-field messages from a 422/409 response, e.g. { email: "..." } */
+  readonly fieldErrors?: Record<string, string>
 
-  constructor(message: string, retryable = true) {
+  constructor(message: string, retryable = true, status?: number, fieldErrors?: Record<string, string>) {
     super(message)
     this.name = 'ApiError'
     this.retryable = retryable
+    this.status = status
+    this.fieldErrors = fieldErrors
   }
 }
 
@@ -64,6 +69,7 @@ export async function sendMessage(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      credentials: 'include', // send the login cookie
       signal: controller.signal,
     })
 
@@ -87,7 +93,7 @@ export async function sendMessage(
           retryable = data.retryable
         }
       }
-      throw new ApiError(detail, retryable)
+      throw new ApiError(detail, retryable, res.status)
     }
 
     if (!data || typeof data !== 'object' ||
