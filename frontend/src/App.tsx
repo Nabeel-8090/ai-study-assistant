@@ -32,6 +32,7 @@ export default function App() {
             {/* Only for logged-in users. Everyone else is redirected to /signin */}
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<ChatPage />} />
+              <Route path="/c/:id" element={<ChatPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

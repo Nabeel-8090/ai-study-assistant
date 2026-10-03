@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { ApiError } from '../api'
 import { removeAvatar, uploadAvatar } from '../authApi'
 import { useAuth } from '../auth'
@@ -13,9 +13,12 @@ const TYPES = ['image/png', 'image/jpeg', 'image/webp']
 export default function ProfilePage() {
   const { user, setUser, logout, handleUnauthorized } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const fileRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'bad', text: string } | null>(null)
+
+  const backUrl = location.state?.fromChatId ? `/c/${location.state.fromChatId}` : '/'
 
   if (!user) return null // ProtectedRoute guarantees a user; this keeps TypeScript happy
 
@@ -51,7 +54,7 @@ export default function ProfilePage() {
   return (
     <div className="app">
       <header className="bar">
-        <Link to="/" className="back-link">← Back to chat</Link>
+        <Link to={backUrl} className="back-link">← Back to chat</Link>
         <ThemeToggle />
       </header>
       <div className="scroll">

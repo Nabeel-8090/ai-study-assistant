@@ -36,6 +36,10 @@ class User(Base):
     sessions: Mapped[list["AuthSession"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", passive_deletes=True
     )
+    conversations: Mapped[list["Conversation"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan", passive_deletes=True,
+        order_by="desc(Conversation.updated_at)"
+    )
 
 
 class AuthSession(Base):
