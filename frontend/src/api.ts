@@ -60,9 +60,10 @@ function messageForStatus(status: number): string {
 /** Sends one message to the backend and returns the model's answer. */
 export async function sendMessage(
   message: string,
+  history: { role: 'user' | 'assistant', content: string }[] = [],
   signal?: AbortSignal,
 ): Promise<string> {
-  const body: ChatRequest = { message }
+  const body: ChatRequest = { message, history }
   if (!Number.isFinite(REQUEST_TIMEOUT_MS) || REQUEST_TIMEOUT_MS <= 0) {
     throw new ApiError('The app request timeout is not configured correctly.', false)
   }

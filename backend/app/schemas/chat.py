@@ -1,10 +1,15 @@
+from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 MAX_MESSAGE_LENGTH = 4000
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=MAX_MESSAGE_LENGTH)
+    history: Optional[List[ChatMessage]] = None
 
     @field_validator("message")
     @classmethod

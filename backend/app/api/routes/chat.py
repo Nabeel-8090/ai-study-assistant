@@ -14,5 +14,5 @@ async def chat(
     settings: Settings = Depends(get_settings),
     _user: User = Depends(get_current_user),  # only signed-in users may chat
 ) -> ChatResponse:
-    answer = await llm.generate_answer(request.message, settings)
+    answer = await llm.generate_answer(request.message, request.history, settings)
     return ChatResponse(answer=answer)

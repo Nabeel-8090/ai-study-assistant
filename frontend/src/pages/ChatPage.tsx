@@ -80,7 +80,7 @@ export default function ChatPage() {
   }, [])
 
   // Ask the backend and append the answer (or set an error).
-  const requestAnswer = useCallback(async (text: string) => {
+  const requestAnswer = useCallback(async (text: string, history: Message[]) => {
     if (abortRef.current) return
     const controller = new AbortController()
     abortRef.current = controller
@@ -88,7 +88,7 @@ export default function ChatPage() {
     setLoading(true)
     setError(null)
     try {
-      const answer = await sendMessage(text, controller.signal)
+      const answer = await sendMessage(text, history, controller.signal)
       if (controller.signal.aborted || abortRef.current !== controller) return
       setMessages((prev) => [
         ...prev,
@@ -117,15 +117,19 @@ export default function ChatPage() {
   const handleSend = useCallback(
     (text: string) => {
       if (abortRef.current) return
+      const currentHistory = [...messages]
       setMessages((prev) => [...prev, { id: newId(), role: 'user', content: text, timestamp: Date.now() }])
-      void requestAnswer(text)
+      void requestAnswer(text, currentHistory)
     },
-    [requestAnswer],
+    [messages, requestAnswer],
   )
 
   function handleRetry() {
-    const lastQuestion = [...messages].reverse().find((m) => m.role === 'user')
-    if (lastQuestion) void requestAnswer(lastQuestion.content)
+    const history = messages.slice(0, -1)
+    const lastQuestion = messages[messages.length - 1]
+    if (lastQuestion && lastQuestion.role === 'user') {
+      void requestAnswer(lastQuestion.content, history)
+    }
   }
 
   function handleNewChat() {

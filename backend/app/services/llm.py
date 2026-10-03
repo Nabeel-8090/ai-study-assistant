@@ -113,15 +113,23 @@ async def close_client() -> None:
             client.close()
 
 
-async def generate_answer(message: str, settings: Settings) -> str:
+async def generate_answer(message: str, history: list | None, settings: Settings) -> str:
     """Send one message to Gemini and return the text of its reply."""
     client = _get_client(settings)
     started = perf_counter()
+
+    contents = []
+    if history:
+        for msg in history:
+            role = "model" if getattr(msg, 'role', '') == "assistant" else "user"
+            contents.append(types.Content(role=role, parts=[types.Part.from_text(text=getattr(msg, 'content', ''))]))
+    contents.append(types.Content(role="user", parts=[types.Part.from_text(text=message)]))
+
     try:
         response = await asyncio.wait_for(
             client.aio.models.generate_content(
                 model=settings.gemini_model,
-                contents=message,
+                contents=contents,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTION,
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
