@@ -12,13 +12,25 @@ export class ApiError extends Error {
   readonly status?: number
   /** Per-field messages from a 422/409 response, e.g. { email: "..." } */
   readonly fieldErrors?: Record<string, string>
+  /** Machine-readable code from the server, e.g. "email_not_verified". */
+  readonly code?: string
+  /** Set with code "email_not_verified": the address the verification code goes to. */
+  readonly email?: string
 
-  constructor(message: string, retryable = true, status?: number, fieldErrors?: Record<string, string>) {
+  constructor(
+    message: string,
+    retryable = true,
+    status?: number,
+    fieldErrors?: Record<string, string>,
+    extra?: { code?: string, email?: string },
+  ) {
     super(message)
     this.name = 'ApiError'
     this.retryable = retryable
     this.status = status
     this.fieldErrors = fieldErrors
+    this.code = extra?.code
+    this.email = extra?.email
   }
 }
 

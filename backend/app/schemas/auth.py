@@ -12,11 +12,27 @@ def clean_username(value: str) -> str:
     return value.strip().lower()
 
 
+def clean_email(value: str) -> str:
+    """The one place email is normalized, so signup, login and reset always agree."""
+    value = value.strip().lower()
+    if len(value) > 254:
+        raise ValueError("Email is too long.")
+    return value
+
+
 class SignupRequest(BaseModel):
     full_name: str = Field(min_length=1, max_length=80)
     username: str = Field(min_length=1, max_length=30)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+    accept_terms: bool
+
+    @field_validator("accept_terms")
+    @classmethod
+    def terms_must_be_accepted(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError("You must accept the Terms of Service and Privacy Policy.")
+        return value
 
     @field_validator("full_name")
     @classmethod
@@ -37,10 +53,7 @@ class SignupRequest(BaseModel):
     @field_validator("email")
     @classmethod
     def email_normalized(cls, value: str) -> str:
-        value = value.strip().lower()
-        if len(value) > 254:
-            raise ValueError("Email is too long.")
-        return value
+        return clean_email(value)
 
 
 class LoginRequest(BaseModel):
@@ -71,3 +84,24 @@ class UserOut(BaseModel):
 class UsernameCheck(BaseModel):
     available: bool
     reason: str | None = None
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def email_normalized(cls, value: str) -> str:
+        return clean_email(value)
+
+
+class VerifyEmailRequest(EmailRequest):
+    code: str = Field(pattern=r"^\d{6}$")  # exactly 6 digits
+
+
+class ResetPasswordRequest(VerifyEmailRequest):
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+class MessageOut(BaseModel):
+    message: str

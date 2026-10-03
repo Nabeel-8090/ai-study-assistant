@@ -10,7 +10,8 @@ export default function SignInPage() {
   const { login, startupError } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const justRegistered = (location.state as { registered?: boolean } | null)?.registered === true
+  // Message handed over by the page we came from (e.g. "Email verified.")
+  const notice = (location.state as { notice?: string } | null)?.notice
 
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -26,6 +27,11 @@ export default function SignInPage() {
       await login(identifier.trim(), password)
       navigate('/', { replace: true })
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'email_not_verified') {
+        // Right password, but the email was never verified: finish verification first.
+        navigate('/verify-email', { state: { email: err.email ?? identifier.trim(), sendCode: true } })
+        return
+      }
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
       setBusy(false)
     }
@@ -33,7 +39,7 @@ export default function SignInPage() {
 
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to continue to your AI assistant.">
-      {justRegistered && !error && <p className="notice ok" role="status">Account created. Please sign in.</p>}
+      {notice && !error && <p className="notice ok" role="status">{notice}</p>}
       {startupError && !error && <p className="notice bad" role="alert">{startupError}</p>}
       <form onSubmit={onSubmit} noValidate>
         <div className="field">
@@ -51,6 +57,7 @@ export default function SignInPage() {
           />
         </div>
         <PasswordField id="password" value={password} onChange={setPassword} autoComplete="current-password" />
+        <p className="forgot-row"><Link to="/forgot-password">Forgot password?</Link></p>
         {error && <p className="notice bad" role="alert">{error}</p>}
         <button type="submit" className="primary" disabled={busy || !identifier.trim() || !password}>
           {busy ? 'Signing in…' : 'Sign in'}

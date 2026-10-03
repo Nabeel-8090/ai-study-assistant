@@ -35,7 +35,7 @@ V03 is also a learning milestone: the implementation should be small, readable, 
 
 ### Non-goals (explicitly out of scope)
 
-PDF/file uploads, embeddings, RAG, Redis, queues, background workers, agents, social login, password reset, email verification, streaming responses, rate limiting, admin roles, conversation sharing, message editing, and a second application framework or generic repository abstraction.
+PDF/file uploads, embeddings, RAG, Redis, queues, background workers, agents, social login, streaming responses, rate limiting, admin roles, conversation sharing, message editing, and a second application framework or generic repository abstraction.
 
 ## 3. Users and user stories
 
@@ -151,8 +151,10 @@ System instructions live in backend configuration/code. There is no `system` rol
 
 ### 7.1 Authentication
 
-- **Signup:** validate email format and password length limits → normalize email → reject duplicates → hash password → create user → create session → set cookie → return safe user JSON.
-- **Login:** normalize email → look up user → verify password → create session → set cookie. Failure always returns the same generic `invalid credentials` error, whether the email doesn't exist or the password is wrong. To reduce timing differences, verify against a dummy hash when the user doesn't exist.
+- **Signup:** validate email format and password length limits → normalize email → reject duplicates → hash password → create user (unverified) → email a 6-digit OTP code.
+- **Verify Email:** validate OTP code → mark user as verified → create session → set cookie.
+- **Forgot/Reset Password:** request OTP to email → validate OTP and new password → reset password.
+- **Login:** normalize email → look up user → verify password → create session → set cookie. (If unverified, prompt for OTP).
 - **Logout:** delete the current session, clear the cookie (same attributes as when set). Idempotent.
 - **Me:** resolve session cookie → reject missing/unknown/expired → return `{id, email, created_at}`.
 - Never return or log password hashes, plaintext passwords, raw session tokens, or token hashes.
@@ -395,7 +397,7 @@ V03 is done when all of the following are true and verified:
 
 ## 17. Risks, limitations, and open questions
 
-**Known limitations (accepted for V03):** no rate limiting or account lockout; fixed (non-sliding) session expiry; no password reset or email verification; no streaming responses; history budget uses tokens from the SDK or an approximation; retry only for the latest message; origin-check CSRF protection targets browsers only; single-region, single-node assumptions; no cleanup job for expired sessions beyond opportunistic deletion.
+**Known limitations (accepted for V03):** no rate limiting or account lockout; fixed (non-sliding) session expiry; no streaming responses; history budget uses tokens from the SDK or an approximation; retry only for the latest message; origin-check CSRF protection targets browsers only; single-region, single-node assumptions; no cleanup job for expired sessions beyond opportunistic deletion.
 
 **Risks:**
 

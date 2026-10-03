@@ -1,7 +1,7 @@
 # AI Study Assistant — V03 step 1: Authentication
 
 React + TypeScript (Vite) frontend, FastAPI backend, PostgreSQL (Neon or local), Gemini.
-This step adds **sign up / sign in / sign out, sessions, profile page + picture, and a protected chat**.
+This step adds **sign up with email verification (6-digit OTP), sign in / sign out, forgot password, sessions, profile page + picture, and a protected chat**.
 Saved conversations come in the next V03 steps.
 
 ## How login works (session cookies, not JWT)
@@ -27,7 +27,10 @@ profile images verified and re-encoded with Pillow, `/api/chat` requires a login
 | Method | API | |
 |---|---|---|
 | GET | `/api/auth/username-available?username=` | live username check |
-| POST | `/api/auth/signup` | create account (does not log in) |
+| POST | `/api/auth/signup` | create account + email verification code |
+| POST | `/api/auth/verify-email` | `{email, code}` |
+| POST | `/api/auth/forgot-password` | request OTP to reset password |
+| POST | `/api/auth/reset-password` | `{email, code, new_password}` |
 | POST | `/api/auth/login` | `{identifier: username-or-email, password}` |
 | POST | `/api/auth/logout` | |
 | GET | `/api/auth/me` | current user |
@@ -96,5 +99,5 @@ test database only; the safety check refuses any database not named `*_test`.
 
 ## Known limitations (kept out of scope on purpose)
 
-No password reset or email verification, no rate limiting / lockout on login, fixed (non-sliding)
+No rate limiting / lockout on login itself (only the emailed codes are limited), fixed (non-sliding)
 session expiry, the username-availability check is public (lets people test whether a username exists).

@@ -21,11 +21,14 @@ async function request(path: string, init: RequestInit = {}, signal?: AbortSigna
 
     let message = 'Something went wrong. Please try again.'
     let fieldErrors: Record<string, string> | undefined
+    const extra: { code?: string, email?: string } = {}
     try {
       const data: unknown = await res.json()
       if (data && typeof data === 'object') {
         const d = data as Record<string, unknown>
         if (typeof d.detail === 'string' && d.detail.trim()) message = d.detail
+        if (typeof d.code === 'string') extra.code = d.code
+        if (typeof d.email === 'string') extra.email = d.email
         if (Array.isArray(d.errors)) {
           fieldErrors = {}
           for (const e of d.errors as { field?: string | null, message?: string }[]) {
@@ -39,7 +42,7 @@ async function request(path: string, init: RequestInit = {}, signal?: AbortSigna
         }
       }
     } catch { /* body was not JSON (gateway error page); keep the generic message */ }
-    throw new ApiError(message, res.status >= 500, res.status, fieldErrors)
+    throw new ApiError(message, res.status >= 500, res.status, fieldErrors, extra)
   } catch (err) {
     if (err instanceof ApiError) throw err
     if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
@@ -58,10 +61,32 @@ const json = (body: unknown): RequestInit => ({
   body: JSON.stringify(body),
 })
 
-export interface SignupInput { full_name: string, username: string, email: string, password: string }
+export interface SignupInput {
+  full_name: string
+  username: string
+  email: string
+  password: string
+  accept_terms: boolean
+}
 
 export async function signup(input: SignupInput): Promise<User> {
   return (await request('/api/auth/signup', json(input))).json()
+}
+
+export async function verifyEmail(email: string, code: string): Promise<void> {
+  await request('/api/auth/verify-email', json({ email, code }))
+}
+
+export async function resendVerification(email: string): Promise<void> {
+  await request('/api/auth/resend-verification', json({ email }))
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  await request('/api/auth/forgot-password', json({ email }))
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+  await request('/api/auth/reset-password', json({ email, code, new_password: newPassword }))
 }
 
 export async function login(identifier: string, password: string): Promise<User> {

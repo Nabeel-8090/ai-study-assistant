@@ -11,7 +11,8 @@ from app import models  # noqa: F401  (importing registers the tables on Base.me
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=False: otherwise running migrations (e.g. inside tests) silences the app's loggers
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

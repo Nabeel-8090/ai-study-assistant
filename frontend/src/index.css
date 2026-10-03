@@ -319,3 +319,39 @@ button.danger:hover { background: #d32f2f; color: #fff; }
   .avatar-actions { flex-direction: column; }
   .bar h1 { font-size: 1.05rem; }
 }
+
+/* ======================================================================
+   V03: email code, forgot password, terms checkbox, legal pages
+   ====================================================================== */
+.field input.otp-input {
+  text-align: center; letter-spacing: 0.6em; font-size: 1.5rem; font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding-left: 1.2em;
+}
+.otp-input::placeholder { letter-spacing: 0.4em; opacity: 0.4; }
+
+.forgot-row { margin: -0.35rem 0 1rem; text-align: right; font-size: 0.9rem; }
+.forgot-row a, .link-btn { color: var(--text-secondary); text-underline-offset: 3px; }
+.forgot-row a:hover, .link-btn:hover:not(:disabled) { color: var(--text-primary); }
+.link-btn {
+  display: block; margin: 0.9rem auto 0; font-size: 0.92rem; font-weight: 500;
+  text-decoration: underline; padding: 0.25rem 0.5rem;
+}
+.link-btn:disabled { text-decoration: none; }
+
+.check { display: flex; align-items: flex-start; gap: 0.6rem; margin: 0.25rem 0 1rem; font-size: 0.92rem; }
+.check input { width: 1.15rem; height: 1.15rem; margin: 0.15rem 0 0; flex-shrink: 0; accent-color: var(--accent-color); cursor: pointer; }
+.check label { color: var(--text-secondary); line-height: 1.5; cursor: pointer; }
+.check a { color: var(--text-primary); font-weight: 600; text-underline-offset: 3px; }
+
+.legal { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+.legal h1 { margin: 0 0 0.25rem; font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; }
+.legal h2 { margin: 2rem 0 0.5rem; font-size: 1.2rem; font-weight: 600; }
+.legal p, .legal li { line-height: 1.7; color: var(--text-primary); overflow-wrap: anywhere; }
+.legal ul { padding-left: 1.25rem; margin: 0.5rem 0; }
+.legal li { margin-bottom: 0.4rem; }
+.legal a { color: var(--text-primary); text-underline-offset: 3px; font-weight: 500; }
+.legal-links { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); }
+@media (max-width: 480px) {
+  .legal h1 { font-size: 1.6rem; }
+  .field input.otp-input { font-size: 1.3rem; letter-spacing: 0.45em; }
+}

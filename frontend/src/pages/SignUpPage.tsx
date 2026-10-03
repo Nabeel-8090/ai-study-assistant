@@ -24,6 +24,7 @@ export default function SignUpPage() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [agreed, setAgreed] = useState(false)
   const [checked, setChecked] = useState<Checked | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -58,7 +59,7 @@ export default function SignUpPage() {
   const passwordError = password && password.length < 8 ? 'Use at least 8 characters.' : undefined
 
   const canSubmit = !busy && fullName.trim() && USERNAME_RE.test(username.trim().toLowerCase())
-    && usernameState.kind !== 'bad' && EMAIL_RE.test(email.trim()) && password.length >= 8
+    && usernameState.kind !== 'bad' && EMAIL_RE.test(email.trim()) && password.length >= 8 && agreed
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -67,8 +68,11 @@ export default function SignUpPage() {
     setFormError(null)
     setFieldErrors({})
     try {
-      await signup({ full_name: fullName.trim(), username: username.trim(), email: email.trim(), password })
-      navigate('/signin', { replace: true, state: { registered: true } })
+      await signup({
+        full_name: fullName.trim(), username: username.trim(), email: email.trim(), password, accept_terms: true,
+      })
+      // The server emailed a 6-digit code. Verify it, then sign in.
+      navigate('/verify-email', { replace: true, state: { email: email.trim().toLowerCase() } })
     } catch (err) {
       if (err instanceof ApiError) {
         setFieldErrors(err.fieldErrors ?? {})
@@ -82,7 +86,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <AuthLayout title="Create your account" subtitle="Sign up, then sign in to start chatting.">
+    <AuthLayout title="Create your account" subtitle="Sign up, verify your email, then sign in to start chatting.">
       <form onSubmit={onSubmit} noValidate>
         <div className="field">
           <label htmlFor="full_name">Full name</label>
@@ -117,6 +121,17 @@ export default function SignUpPage() {
 
         <PasswordField id="new-password" value={password} onChange={setPassword} autoComplete="new-password"
           error={passwordError ?? fieldErrors.password} hint="At least 8 characters." />
+
+        <div className="check">
+          <input id="terms" type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+          <label htmlFor="terms">
+            I agree to the{' '}
+            <Link to="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</Link>
+            {' '}and{' '}
+            <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>.
+          </label>
+        </div>
+        {fieldErrors.accept_terms && <p className="field-msg bad" role="alert">{fieldErrors.accept_terms}</p>}
 
         {formError && <p className="notice bad" role="alert">{formError}</p>}
         <button type="submit" className="primary" disabled={!canSubmit}>

@@ -17,6 +17,7 @@ from ..core.security import (
     verify_password,
 )
 from ..models import AuthSession, User
+from ..core.legal import TERMS_VERSION
 from ..schemas.auth import USERNAME_PATTERN, USERNAME_RULE, UserOut, clean_username
 
 logger = logging.getLogger(__name__)
@@ -25,12 +26,15 @@ logger = logging.getLogger(__name__)
 class AuthError(Exception):
     """An expected, user-facing failure. main.py turns it into the JSON error response."""
 
-    def __init__(self, status_code: int, code: str, message: str, field: str | None = None):
+    def __init__(
+        self, status_code: int, code: str, message: str, field: str | None = None, extra: dict | None = None
+    ):
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
         self.field = field
+        self.extra = extra
 
 
 UNAUTHENTICATED = AuthError(401, "unauthenticated", "Please sign in.")
@@ -78,7 +82,14 @@ def create_user(db: Session, *, full_name: str, username: str, email: str, passw
     if db.scalar(select(User.id).where(User.email == email)) is not None:
         raise AuthError(409, "email_taken", "An account with this email already exists.", "email")
 
-    user = User(full_name=full_name, username=username, email=email, password_hash=hash_password(password))
+    user = User(
+        full_name=full_name,
+        username=username,
+        email=email,
+        password_hash=hash_password(password),
+        terms_accepted_at=utcnow(),
+        terms_version=TERMS_VERSION,
+    )
     db.add(user)
     try:
         db.flush()
@@ -92,6 +103,10 @@ def create_user(db: Session, *, full_name: str, username: str, email: str, passw
             raise AuthError(409, "username_taken", "This username is already taken.", "username") from exc
         raise
     return user
+
+
+def get_user_by_email(db: Session, email: str) -> User | None:
+    return db.scalar(select(User).where(User.email == email))
 
 
 def authenticate(db: Session, identifier: str, password: str) -> User:
@@ -129,6 +144,11 @@ def get_user_by_token(db: Session, token: str | None) -> User | None:
         select(AuthSession).where(AuthSession.token_hash == hash_token(token), AuthSession.expires_at > utcnow())
     )
     return row.user if row else None
+
+
+def delete_all_sessions(db: Session, user: User) -> None:
+    """Sign the user out everywhere (used after a password reset)."""
+    db.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
 
 
 def delete_session(db: Session, token: str | None) -> None:

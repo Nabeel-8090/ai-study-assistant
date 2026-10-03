@@ -20,6 +20,19 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 if not settings.gemini_api_key:
     logger.warning("GEMINI_API_KEY is not set. Copy .env.example to .env and add your key.")
+if not settings.secret_key:
+    # Fail early with a clear message instead of failing later during a signup.
+    raise RuntimeError(
+        "SECRET_KEY is not set. Add it to backend/.env. Generate one with:\n"
+        '  python -c "import secrets; print(secrets.token_urlsafe(32))"'
+    )
+if settings.email_backend == "console" and settings.cookie_secure:
+    raise RuntimeError(
+        "EMAIL_BACKEND=console only prints codes in the server log and is for development. "
+        "Set EMAIL_BACKEND=smtp (with the SMTP_* settings) when COOKIE_SECURE=true."
+    )
+if settings.email_backend == "console":
+    logger.warning("EMAIL_BACKEND=console: verification codes are printed here, not emailed.")
 
 
 @asynccontextmanager
@@ -74,6 +87,8 @@ async def auth_error_handler(request: Request, exc: AuthError) -> JSONResponse:
     content = {"detail": exc.message, "code": exc.code}
     if exc.field:
         content["field"] = exc.field
+    if exc.extra:
+        content.update(exc.extra)
     return JSONResponse(status_code=exc.status_code, content=content)
 
 

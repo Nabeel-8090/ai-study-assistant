@@ -10,9 +10,8 @@ import { ThemeToggle } from '../theme'
 import type { Message } from '../types'
 
 const SUGGESTIONS = [
-  'Explain OS concepts',
-  'What is the difference between a process and a thread?',
-  'How does virtual memory work?',
+  'How do file permissions work in Linux?',
+  'How does a CPU execute instructions?',
 ]
 
 let idCounter = 0
@@ -179,7 +178,7 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <div className="scroll">
+      <div className="scroll" style={{ overflowY: isEmpty ? 'hidden' : 'auto' }}>
         <div className="thread" role="log" aria-label="Conversation">
           {isEmpty && (
             <section className="empty">

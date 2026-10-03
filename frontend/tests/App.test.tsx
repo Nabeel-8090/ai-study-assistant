@@ -80,7 +80,7 @@ describe('chat screen', () => {
   })
 
   it('aborts an in-flight request when unmounted', () => {
-    send.mockReturnValue(new Promise(() => { }))
+    send.mockReturnValue(new Promise(() => {}))
     const { unmount } = render(<App />)
     ask()
     const signal = send.mock.calls[0][1]
