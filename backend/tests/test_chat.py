@@ -10,9 +10,19 @@ from google import genai
 
 from app.services import llm
 from app.core.config import Settings, get_settings
+from app.api.deps import get_current_user
 from app.main import app
 
-client = TestClient(app, raise_server_exceptions=False)
+# State-changing requests must come from a trusted origin (CSRF protection).
+client = TestClient(app, raise_server_exceptions=False, headers={"Origin": "http://localhost:5173"})
+
+
+@pytest.fixture(autouse=True)
+def signed_in_user():
+    """/api/chat now requires a login; these tests are about chat, so fake the user."""
+    app.dependency_overrides[get_current_user] = lambda: object()
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 def fake_answer(text: str):

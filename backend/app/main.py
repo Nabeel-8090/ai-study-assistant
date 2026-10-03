@@ -1,14 +1,18 @@
 import logging
 from contextlib import asynccontextmanager
 
+from urllib.parse import urlsplit
+
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .api.routes import chat, health
+from .api.routes import auth, chat, health, profile
 from .core.config import get_settings
 from .core.logging import setup_logging
 from .services import llm
+from .services.auth import AuthError
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -29,12 +33,63 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Basic AI Chat API", lifespan=lifespan)
 
+SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+
+
+@app.middleware("http")
+async def require_trusted_origin(request: Request, call_next):
+    """CSRF protection for cookie logins.
+
+    Browsers attach cookies automatically, even when another website triggers the
+    request. Every state-changing request must therefore say (via the Origin
+    header, or Referer as a fallback) that it comes from one of our own frontends.
+    """
+    if request.method not in SAFE_METHODS:
+        origin = request.headers.get("origin")
+        if not origin:
+            parts = urlsplit(request.headers.get("referer", ""))
+            origin = f"{parts.scheme}://{parts.netloc}" if parts.scheme and parts.netloc else None
+        if origin not in settings.allowed_origins:
+            logger.warning("Blocked %s %s from untrusted origin %r", request.method, request.url.path, origin)
+            return JSONResponse(
+                status_code=403,
+                content={"detail": "This request came from an untrusted origin.", "code": "untrusted_origin"},
+            )
+    return await call_next(request)
+
+
+# Added after the origin check on purpose: the last middleware added is the outermost,
+# so CORS headers are present even on the 403 above and the browser can read it.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_methods=["GET", "POST"],
+    allow_origins=settings.allowed_origins,  # explicit list, never "*"
+    allow_credentials=True,  # lets the browser send/receive the session cookie
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type"],
 )
+
+
+@app.exception_handler(AuthError)
+async def auth_error_handler(request: Request, exc: AuthError) -> JSONResponse:
+    content = {"detail": exc.message, "code": exc.code}
+    if exc.field:
+        content["field"] = exc.field
+    return JSONResponse(status_code=exc.status_code, content=content)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    # FastAPI's default 422 body echoes the submitted values back ("input"),
+    # which would include the plaintext password. Return only field + message.
+    errors = []
+    for err in exc.errors():
+        loc = [str(p) for p in err.get("loc", ()) if p not in ("body", "query")]
+        message = str(err.get("msg", "Invalid value.")).removeprefix("Value error, ")
+        errors.append({"field": ".".join(loc) or None, "message": message})
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Please check the form and try again.", "code": "validation_error", "errors": errors},
+    )
 
 
 @app.exception_handler(llm.LLMError)
@@ -53,4 +108,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 app.include_router(health.router)
+app.include_router(auth.router)
+app.include_router(profile.router)
 app.include_router(chat.router)
