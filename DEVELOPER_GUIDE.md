@@ -3,11 +3,12 @@
 This document explains **each and every concept** you should know as a developer working on this project. This project connects a modern Frontend (React + Vite + TypeScript) to a Python Backend (FastAPI), which in turn communicates with Google's Gemini LLM.
 
 ## 1. The Architecture (High Level)
-The architecture follows a standard 3-tier structure, minus the database:
+The architecture follows a standard multi-tier structure, backed by a PostgreSQL database:
 
 1. **Frontend (Client Layer)**: React application running in the user's browser. Responsible for the User Interface (UI), managing local chat state, and displaying messages.
-2. **Backend (Server Layer)**: A FastAPI Python server. Responsible for validation, security (hiding API keys), and acting as a bridge.
-3. **LLM (AI Layer)**: Google's Gemini API, accessed via the `google-genai` Python SDK. Responsible for generating the intelligence.
+2. **Backend (Server Layer)**: A FastAPI Python server. Responsible for validation, security, user authentication/sessions, and acting as a bridge to the LLM.
+3. **Database (Data Layer)**: PostgreSQL is used via SQLAlchemy to securely store users, passwords (hashed via Argon2), and active session cookies.
+4. **LLM (AI Layer)**: Google's Gemini API, accessed via the `google-genai` Python SDK. Responsible for generating the intelligence.
 
 **The Request Flow:**
 1. User types "Hello" in the React `Composer` component and presses Send.
@@ -86,5 +87,5 @@ This makes it easy for the frontend to display helpful, human-readable error mes
 **Why not call Gemini directly from React?**
 If we put the `GEMINI_API_KEY` in the React frontend, anyone visiting the website could open their browser's developer tools, steal the key, and use it to run up a massive bill on your Google account. The backend exists as a secure middleman. The backend holds the secret key, authenticates with Google, and returns the public result to the frontend.
 
-**Why no database?**
-For this basic version, messages live entirely in the React browser memory. If you refresh the page, the state is wiped. Adding a database would require user accounts (so users don't see each other's chats), session cookies, and database schema migrations. Keeping it stateless makes this the perfect starter project!
+**Why do we have a Database?**
+We use PostgreSQL to store User Profiles, Avatars, and secure session credentials. By utilizing HttpOnly cookies stored via sessions in the database, the backend handles all authorization seamlessly without relying on insecure localStorage token storage. Future versions will expand the database schema to store and retrieve chat histories so conversations persist across sessions!
