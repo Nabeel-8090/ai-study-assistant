@@ -1,13 +1,14 @@
-# Basic AI Chat
+# AI Study Assistant
 
-A minimal chatbot: **React (Vite + TypeScript) → FastAPI → Gemini → FastAPI → React**.
-No database, no login. Each message is answered on its own (there is no chat memory yet).
+A modern chatbot built with **React (Vite + TypeScript) → FastAPI → PostgreSQL → Gemini**.
+This version introduces **Authentication and a Database** (V03). The chat interface now allows for saved users, secure sessions, and a backend-stored conversation history (in progress).
 
 **Key Features:**
-- Custom UI theme (Deep Navy #0F172A and Soft Off-White #F8FAFC) with a modern simple logo.
-- Message timestamps for precise tracking of message sent and received times.
-- Real-time Markdown rendering for AI responses with automatic code highlighting.
-- Responsive, accessible design with copy-to-clipboard functionality.
+- **User Authentication:** Sign up, sign in, and secure session management using HttpOnly cookies.
+- **Database Storage:** Uses PostgreSQL to securely store user credentials and sessions.
+- **Protected Chat & Profile:** Protected routes ensure only authenticated users can access the chat and profile pages.
+- **Custom UI theme:** Deep Navy #0F172A and Soft Off-White #F8FAFC with a modern simple logo.
+- **Real-time Markdown rendering:** Automatic code highlighting for AI responses.
 
 ```
 basic-ai-chat/
@@ -139,8 +140,9 @@ npm run build
 npm run lint
 ```
 
-Tests simulate upstream failures; they do not spend Gemini quota. To check Gemini
-directly with one small live request, independently of the frontend and FastAPI:
+Tests simulate upstream failures and test all database authentication paths. To run tests correctly, you MUST have a local PostgreSQL server with a test database available and configured in `.env`.
+
+To check Gemini directly with one small live request, independently of the frontend and FastAPI:
 
 ```bash
 cd backend
