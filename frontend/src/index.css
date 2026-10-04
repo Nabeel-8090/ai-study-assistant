@@ -28,7 +28,7 @@
   --accent-hover: #6366F1;
   --accent-text-color: #FFFFFF;
   --surface-color: #131A2B;
-  --text-primary: #F8FAFC;
+  --text-primary: #E2E8F0;
   --text-secondary: #94A3B8;
   --border-color: #1E293B;
   --header-bg: rgba(11, 15, 25, 0.85);
@@ -325,13 +325,37 @@ button:disabled {
 
 .prose table {
   border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  font-size: 0.95em;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border-color);
 }
 
 .prose th,
 .prose td {
   border: 1px solid var(--border-color);
-  padding: 0.5rem 0.75rem;
+  padding: 0.85rem 1rem;
   text-align: left;
+}
+
+.prose th {
+  background-color: rgba(255, 255, 255, 0.03);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+[data-theme='light'] .prose th {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.prose tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+[data-theme='light'] .prose tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.01);
 }
 
 .prose p:first-child {

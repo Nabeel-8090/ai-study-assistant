@@ -7,27 +7,42 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? '?') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase()
 }
 
+const avatarCache = new Map<number, string>()
+const avatarPromises = new Map<number, Promise<string>>()
+
 /** The user's picture if they have one, otherwise their initials. */
 export function Avatar({ user, size = 40 }: { user: User, size?: number }) {
-  const [url, setUrl] = useState<string | null>(null)
-  const version = user.avatar_version
+  const version = user.avatar_version || 0
   const hasAvatar = user.has_avatar
+  const [url, setUrl] = useState<string | null>(hasAvatar ? avatarCache.get(version) || null : null)
 
   useEffect(() => {
     if (!hasAvatar) return
-    const controller = new AbortController()
-    let created: string | null = null
-    fetchAvatarUrl(controller.signal).then(
-      (u) => {
-        created = u
-        if (controller.signal.aborted) URL.revokeObjectURL(u)
-        else setUrl(u)
-      },
-      () => setUrl(null), // fall back to initials
-    )
+    
+    if (avatarCache.has(version)) {
+      setUrl(avatarCache.get(version)!)
+      return
+    }
+
+    let isMounted = true
+
+    if (!avatarPromises.has(version)) {
+      const promise = fetchAvatarUrl().then((u) => {
+        avatarCache.set(version, u)
+        return u
+      }).catch(() => {
+        avatarPromises.delete(version)
+        return null as unknown as string
+      })
+      avatarPromises.set(version, promise)
+    }
+
+    avatarPromises.get(version)!.then((u) => {
+      if (isMounted && u) setUrl(u)
+    })
+
     return () => {
-      controller.abort()
-      if (created) URL.revokeObjectURL(created)
+      isMounted = false
     }
   }, [hasAvatar, version])
 
