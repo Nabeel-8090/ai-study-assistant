@@ -13,7 +13,7 @@ from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 
-APP_NAME = "AI Study Assistant"
+APP_NAME = "MyAI"
 
 
 def send_email(settings: Settings, to: str, subject: str, body: str) -> None:
