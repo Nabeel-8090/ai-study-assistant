@@ -3,7 +3,8 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
-
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useState } from 'react'
 
 function CopyButton({ text }: { text: string }) {
@@ -79,9 +80,20 @@ export function Answer({ text }: { text: string }) {
                   <span style={{ textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>{language}</span>
                   <CopyButton text={textToCopy} />
                 </div>
-                <pre {...props} style={{ margin: 0, borderRadius: 0, border: 'none' }}>
-                  {children}
-                </pre>
+                {match ? (
+                  <SyntaxHighlighter
+                    style={vscDarkPlus}
+                    language={match[1]}
+                    PreTag="pre"
+                    customStyle={{ margin: 0, borderRadius: 0, border: 'none', background: 'var(--code-bg)', padding: '1em' }}
+                  >
+                    {textToCopy}
+                  </SyntaxHighlighter>
+                ) : (
+                  <pre {...props} style={{ margin: 0, borderRadius: 0, border: 'none', padding: '1em', overflowX: 'auto', background: 'var(--code-bg)' }}>
+                    {children}
+                  </pre>
+                )}
               </div>
             )
           },
