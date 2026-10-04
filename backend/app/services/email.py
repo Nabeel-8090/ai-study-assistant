@@ -13,10 +13,10 @@ from ..core.config import Settings
 
 logger = logging.getLogger(__name__)
 
-APP_NAME = "MyAI"
+APP_NAME = "RAGGG"
 
 
-def send_email(settings: Settings, to: str, subject: str, body: str) -> None:
+def send_email(settings: Settings, to: str, subject: str, body: str, html_body: str = None) -> None:
     """Deliver one plain-text email. Never raises: it runs after the HTTP response was sent."""
     if settings.email_backend == "console":
         logger.warning("EMAIL (console backend, NOT actually sent)\n  To: %s\n  Subject: %s\n\n%s", to, subject, body)
@@ -27,6 +27,9 @@ def send_email(settings: Settings, to: str, subject: str, body: str) -> None:
     message["To"] = to
     message["Subject"] = subject
     message.set_content(body)
+    if html_body:
+        message.add_alternative(html_body, subtype="html")
+        
     try:
         context = ssl.create_default_context()
         if settings.smtp_port == 465:
@@ -57,10 +60,43 @@ def send_otp_email(settings: Settings, to: str, full_name: str, code: str, purpo
         subject = f"{APP_NAME}: verify your email"
         intro = "Use this code to verify your email address."
         outro = "If you did not create an account, you can ignore this email."
+        
     body = (
         f"Hi {first_name},\n\n{intro}\n\n"
         f"    {code}\n\n"
         f"This code expires in {minutes} minutes and can be used once. "
         f"Never share it with anyone.\n\n{outro}\n\n- {APP_NAME}\n"
     )
-    send_email(settings, to, subject, body)
+    
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; margin: 0; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #111111; border: 1px solid #333333; border-radius: 12px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">RAGGG</h1>
+                <p style="color: #888888; margin: 8px 0 0 0; font-size: 15px;">Your AI Study Companion</p>
+            </div>
+            <h2 style="color: #eeeeee; font-size: 22px; margin-top: 0; font-weight: 600;">Hi {first_name},</h2>
+            <p style="color: #bbbbbb; font-size: 16px; line-height: 1.6;">{intro}</p>
+            
+            <div style="background-color: #222222; border: 1px solid #444444; border-radius: 8px; padding: 24px; text-align: center; margin: 35px 0; -webkit-user-select: all; user-select: all;">
+                <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 42px; font-weight: bold; color: #ffffff; display: inline-block; padding: 10px;">{code}</span>
+            </div>
+            
+            <p style="color: #aaaaaa; font-size: 15px; line-height: 1.6;">
+                This code expires in <strong style="color: #dddddd;">{minutes} minutes</strong> and can be used once. Never share it with anyone.
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #333333; margin: 40px 0;">
+            
+            <p style="color: #cccccc; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
+                {outro}<br><br>
+                &copy; 2026 RAGGG
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    send_email(settings, to, subject, body, html_body=html_body)

@@ -528,7 +528,7 @@ export default function ChatPage() {
               <SidebarToggleBtn isOpen={false} onClick={() => setSidebarOpen(true)} />
             )}
             <img src="/favicon.png" alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
-            <h1>MyAI</h1>
+            <h1>RAGGG</h1>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <ThemeToggle />

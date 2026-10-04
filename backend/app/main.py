@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
         await llm.close_client()
 
 
-app = FastAPI(title="Basic AI Chat API", lifespan=lifespan)
+app = FastAPI(title="RAGGG API", lifespan=lifespan)
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
