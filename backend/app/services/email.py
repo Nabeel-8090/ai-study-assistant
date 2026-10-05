@@ -51,6 +51,30 @@ def send_email(settings: Settings, to: str, subject: str, body: str, html_body: 
             logger.error("Could not send email via Mailjet API (%s): %s", type(exc).__name__, exc)
         return
 
+    if settings.email_backend == "brevo":
+        headers = {
+            "accept": "application/json",
+            "api-key": settings.smtp_password,
+            "content-type": "application/json"
+        }
+        data = {
+            "sender": {"email": settings.smtp_from, "name": APP_NAME},
+            "to": [{"email": to}],
+            "subject": subject,
+            "textContent": body
+        }
+        if html_body:
+            data["htmlContent"] = html_body
+            
+        try:
+            with httpx.Client() as client:
+                response = client.post("https://api.brevo.com/v3/smtp/email", headers=headers, json=data, timeout=15.0)
+                response.raise_for_status()
+                logger.info("Email sent via Brevo (subject=%r)", subject)
+        except httpx.HTTPError as exc:
+            logger.error("Could not send email via Brevo API (%s): %s", type(exc).__name__, exc)
+        return
+
     message = EmailMessage()
     message["From"] = f"{APP_NAME} <{settings.smtp_from}>"
     message["To"] = to
