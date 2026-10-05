@@ -100,3 +100,99 @@ def send_otp_email(settings: Settings, to: str, full_name: str, code: str, purpo
     """
     
     send_email(settings, to, subject, body, html_body=html_body)
+
+
+def send_welcome_email(settings: Settings, to: str, full_name: str) -> None:
+    first_name = full_name.split()[0] if full_name.strip() else "there"
+    subject = f"Welcome to {APP_NAME}!"
+    body = (
+        f"Hi {first_name},\n\n"
+        f"Your email has been successfully verified, and your account is ready to go!\n\n"
+        f"Start exploring {APP_NAME} now. Feel free to ask your AI study companion anything.\n\n"
+        f"Happy learning,\n"
+        f"- The {APP_NAME} Team\n"
+    )
+    
+    app_url = settings.allowed_origins[0] if settings.allowed_origins else "http://localhost:5173"
+    
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; margin: 0; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #111111; border: 1px solid #333333; border-radius: 12px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">RAGGG</h1>
+                <p style="color: #888888; margin: 8px 0 0 0; font-size: 15px;">Your AI Study Companion</p>
+            </div>
+            <h2 style="color: #eeeeee; font-size: 22px; margin-top: 0; font-weight: 600;">Welcome, {first_name}!</h2>
+            <p style="color: #bbbbbb; font-size: 16px; line-height: 1.6;">Your email has been successfully verified, and your account is ready to go.</p>
+            
+            <p style="color: #aaaaaa; font-size: 15px; line-height: 1.6;">
+                Start exploring <strong>{APP_NAME}</strong> now. Feel free to ask your AI study companion anything.
+            </p>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{app_url}" style="background-color: #ffffff; color: #000000; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">Start Chatting Now</a>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #333333; margin: 40px 0;">
+            
+            <p style="color: #cccccc; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
+                Happy learning,<br>The {APP_NAME} Team<br><br>
+                &copy; 2026 RAGGG
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    send_email(settings, to, subject, body, html_body=html_body)
+
+
+def send_password_changed_email(settings: Settings, to: str, full_name: str) -> None:
+    first_name = full_name.split()[0] if full_name.strip() else "there"
+    subject = f"Your {APP_NAME} password was changed"
+    body = (
+        f"Hi {first_name},\n\n"
+        f"This is a confirmation that the password for your {APP_NAME} account has just been changed.\n\n"
+        f"If you made this change, you can safely ignore this email.\n"
+        f"If you didn't change your password, please secure your account immediately.\n\n"
+        f"- {APP_NAME} Security\n"
+    )
+    
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; margin: 0; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #111111; border: 1px solid #333333; border-radius: 12px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">RAGGG</h1>
+                <p style="color: #888888; margin: 8px 0 0 0; font-size: 15px;">Your AI Study Companion</p>
+            </div>
+            <h2 style="color: #eeeeee; font-size: 22px; margin-top: 0; font-weight: 600;">Hi {first_name},</h2>
+            
+            <div style="background-color: #331111; border-left: 4px solid #ff4444; border-radius: 4px; padding: 16px; margin: 25px 0;">
+                <p style="color: #ffcccc; margin: 0; font-size: 16px; font-weight: 600;">Password Change Confirmation</p>
+                <p style="color: #eebbbb; margin: 8px 0 0 0; font-size: 15px; line-height: 1.5;">The password for your {APP_NAME} account has just been changed.</p>
+            </div>
+            
+            <p style="color: #aaaaaa; font-size: 15px; line-height: 1.6;">
+                If you made this change, you can safely ignore this email.
+            </p>
+            
+            <p style="color: #aaaaaa; font-size: 15px; line-height: 1.6;">
+                If you didn't change your password, please go to the app and reset your password immediately to secure your account.
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #333333; margin: 40px 0;">
+            
+            <p style="color: #cccccc; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
+                {APP_NAME} Security<br><br>
+                &copy; 2026 RAGGG
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    send_email(settings, to, subject, body, html_body=html_body)

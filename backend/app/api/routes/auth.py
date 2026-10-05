@@ -70,15 +70,26 @@ def signup(
 
 @router.post("/verify-email", response_model=MessageOut)
 def verify_email(
-    body: VerifyEmailRequest, db: Session = Depends(get_db), settings: Settings = Depends(get_settings)
+    body: VerifyEmailRequest, 
+    background: BackgroundTasks,
+    db: Session = Depends(get_db), 
+    settings: Settings = Depends(get_settings)
 ) -> MessageOut:
     user = auth_service.get_user_by_email(db, body.email)
     if user is None or not otp.check_code(db, user, otp.VERIFY_EMAIL, body.code, settings):
         # One message for "wrong", "expired", "used" and "no such account".
         raise auth_service.AuthError(400, "invalid_code", "That code is incorrect or has expired.", "code")
+    
+    just_verified = False
     if user.email_verified_at is None:
         user.email_verified_at = auth_service.utcnow()
+        just_verified = True
+        
     db.commit()
+    
+    if just_verified:
+        background.add_task(email_service.send_welcome_email, settings, user.email, user.full_name)
+        
     return MessageOut(message="Email verified. You can now sign in.")
 
 
@@ -111,7 +122,10 @@ def forgot_password(
 
 @router.post("/reset-password", response_model=MessageOut)
 def reset_password(
-    body: ResetPasswordRequest, db: Session = Depends(get_db), settings: Settings = Depends(get_settings)
+    body: ResetPasswordRequest, 
+    background: BackgroundTasks,
+    db: Session = Depends(get_db), 
+    settings: Settings = Depends(get_settings)
 ) -> MessageOut:
     user = auth_service.get_user_by_email(db, body.email)
     if user is None or not otp.check_code(db, user, otp.RESET_PASSWORD, body.code, settings):
@@ -121,6 +135,9 @@ def reset_password(
         user.email_verified_at = auth_service.utcnow()  # they just proved they own this inbox
     auth_service.delete_all_sessions(db, user)  # a reset signs the account out everywhere
     db.commit()
+    
+    background.add_task(email_service.send_password_changed_email, settings, user.email, user.full_name)
+    
     return MessageOut(message="Password updated. Please sign in with your new password.")
 
 
