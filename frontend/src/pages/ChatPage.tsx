@@ -200,7 +200,7 @@ function MessageItem({ m, isLast, lastMessageRef, onRetry }: { m: Message, isLas
   )
 }
 
-function SidebarToggleBtn({ isOpen, onClick }: { isOpen: boolean, onClick: () => void }) {
+function SidebarToggleBtn({ onClick }: { onClick: () => void }) {
   const [isHovered, setIsHovered] = useState(false)
   return (
     <div style={{ position: 'relative', display: 'flex' }} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
@@ -521,7 +521,7 @@ export default function ChatPage() {
           )}
           <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <SidebarToggleBtn isOpen={true} onClick={() => setSidebarOpen(false)} />
+              <SidebarToggleBtn onClick={() => setSidebarOpen(false)} />
               <h2 style={{ fontSize: '1.1rem', margin: 0, fontWeight: 600 }}>History</h2>
             </div>
             <button type="button" onClick={() => { navigate('/'); handleSidebarNav() }} style={{ padding: '6px', background: 'transparent', color: 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'} title="New Chat">
@@ -546,7 +546,7 @@ export default function ChatPage() {
         <header className="bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {!sidebarOpen && (
-              <SidebarToggleBtn isOpen={false} onClick={() => setSidebarOpen(true)} />
+              <SidebarToggleBtn onClick={() => setSidebarOpen(true)} />
             )}
             <img src="/favicon.png" alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
             <h1>RAGGG</h1>
