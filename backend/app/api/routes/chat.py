@@ -45,6 +45,15 @@ def create_conversation(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
+    # If the user already has an empty conversation, just return that to avoid spam
+    existing_empty = db.scalar(
+        select(Conversation)
+        .where(Conversation.user_id == user.id, ~Conversation.messages.any())
+        .order_by(Conversation.created_at.desc())
+    )
+    if existing_empty:
+        return existing_empty
+
     conversation = Conversation(user_id=user.id, title="New Chat")
     db.add(conversation)
     db.commit()
