@@ -247,8 +247,15 @@ export default function ChatPage() {
   const { id: conversationId } = useParams<{ id: string }>()
   const navigate = useNavigate()
   
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [messages, setMessages] = useState<Message[]>([])
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    const cached = sessionStorage.getItem('raggg_conversations')
+    return cached ? JSON.parse(cached) : []
+  })
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (!conversationId) return []
+    const cached = sessionStorage.getItem(`raggg_messages_${conversationId}`)
+    return cached ? JSON.parse(cached) : []
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<ApiError | null>(null)
   
@@ -339,6 +346,7 @@ export default function ChatPage() {
   useEffect(() => {
     getConversations().then(res => {
       setConversations(res.items)
+      sessionStorage.setItem('raggg_conversations', JSON.stringify(res.items))
     }).catch(console.error)
   }, [])
 
@@ -348,10 +356,19 @@ export default function ChatPage() {
         skipNextFetch.current = false
         return
       }
-      setMessages([])
-      setLoading(true)
+      
+      const cacheKey = `raggg_messages_${conversationId}`
+      const cached = sessionStorage.getItem(cacheKey)
+      if (cached) {
+        setMessages(JSON.parse(cached))
+      } else {
+        setMessages([])
+        setLoading(true)
+      }
+      
       getMessages(conversationId).then(res => {
         setMessages(res.items)
+        sessionStorage.setItem(cacheKey, JSON.stringify(res.items))
       }).catch(err => {
         if (err.status === 401) handleUnauthorized()
         setError(err)
@@ -402,7 +419,9 @@ export default function ChatPage() {
           return c
         })
         const c = updated.find(x => x.id === targetConvId)
-        return c ? [c, ...updated.filter(x => x.id !== targetConvId)] : updated
+        const finalConvs = c ? [c, ...updated.filter(x => x.id !== targetConvId)] : updated
+        sessionStorage.setItem('raggg_conversations', JSON.stringify(finalConvs))
+        return finalConvs
       })
       
     } catch (err) {
@@ -444,7 +463,11 @@ export default function ChatPage() {
     e.stopPropagation()
     try {
       await deleteConversation(id)
-      setConversations(prev => prev.filter(c => c.id !== id))
+      setConversations(prev => {
+        const filtered = prev.filter(c => c.id !== id)
+        sessionStorage.setItem('raggg_conversations', JSON.stringify(filtered))
+        return filtered
+      })
       if (conversationId === id) navigate('/')
     } catch (err) {
       console.error(err)
