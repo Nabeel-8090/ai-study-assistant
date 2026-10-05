@@ -426,7 +426,6 @@ export default function ChatPage() {
       
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) handleUnauthorized()
-      setError(err instanceof ApiError ? err : new ApiError('Something went wrong'))
       // On error, mark the temporary assistant message as errored
       setMessages(prev => prev.map(m => m.id === tempAsstId ? { ...m, status: 'error' } : m))
     } finally {
@@ -451,7 +450,6 @@ export default function ChatPage() {
       setMessages(prev => prev.map(m => m.id === messageId ? res.assistant_message : m))
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) handleUnauthorized()
-      setError(err instanceof ApiError ? err : new ApiError('Something went wrong'))
       setMessages(prev => prev.map(m => m.id === messageId ? { ...m, status: 'error' } : m))
     } finally {
       setLoading(false)
