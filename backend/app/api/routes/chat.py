@@ -237,13 +237,4 @@ async def retry_message(
     return SendMessageResponse(user_message=user_msg, assistant_message=assistant_msg)
 
 
-legacy_router = APIRouter(prefix="/api", tags=["chat_legacy"])
 
-@legacy_router.post("/chat", response_model=ChatResponse)
-async def chat(
-    request: ChatRequest,
-    settings: Settings = Depends(get_settings),
-    _user: User = Depends(get_current_user),  # only signed-in users may chat
-) -> ChatResponse:
-    answer = await llm.generate_answer(request.message, request.history, settings)
-    return ChatResponse(answer=answer)
