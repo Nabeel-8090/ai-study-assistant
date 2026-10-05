@@ -30,7 +30,7 @@ class Settings:
     cookie_samesite: str = "lax"  # "lax" | "strict" | "none"
     # --- V03: email codes (OTP) and password reset ---
     secret_key: str = field(default="", repr=False)  # signs/hashes one-time codes
-    email_backend: str = "console"  # "console" = dev only, prints the email | "smtp" = really sends
+    email_backend: str = "console"  # "console" | "smtp" | "mailjet"
     smtp_host: str = ""
     smtp_port: int = 587  # 587 = STARTTLS, 465 = implicit SSL
     smtp_username: str = ""
@@ -50,10 +50,10 @@ class Settings:
             raise ValueError("SESSION_LIFETIME_HOURS must be greater than zero.")
         if self.cookie_samesite not in {"lax", "strict", "none"}:
             raise ValueError("COOKIE_SAMESITE must be lax, strict or none.")
-        if self.email_backend not in {"console", "smtp"}:
-            raise ValueError("EMAIL_BACKEND must be 'console' or 'smtp'.")
-        if self.email_backend == "smtp" and not (self.smtp_host and self.smtp_from):
-            raise ValueError("EMAIL_BACKEND=smtp needs SMTP_HOST and SMTP_FROM (or SMTP_USERNAME).")
+        if self.email_backend not in {"console", "smtp", "mailjet"}:
+            raise ValueError("EMAIL_BACKEND must be 'console', 'smtp' or 'mailjet'.")
+        if self.email_backend in ("smtp", "mailjet") and not (self.smtp_username and self.smtp_from):
+            raise ValueError(f"EMAIL_BACKEND={self.email_backend} needs SMTP_USERNAME and SMTP_FROM.")
         if self.otp_ttl_minutes <= 0 or self.otp_max_attempts <= 0 or self.otp_max_sends_per_hour <= 0:
             raise ValueError("OTP_TTL_MINUTES, OTP_MAX_ATTEMPTS and OTP_MAX_SENDS_PER_HOUR must be greater than zero.")
         if self.otp_resend_cooldown_seconds < 0:

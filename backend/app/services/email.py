@@ -4,9 +4,11 @@ EMAIL_BACKEND=console  (development)  prints the email in the server terminal. N
 EMAIL_BACKEND=smtp     (real)         sends through your SMTP server (Gmail, Brevo, ...).
 """
 
+import httpx
 import logging
 import smtplib
 import ssl
+import base64
 from email.message import EmailMessage
 
 from ..core.config import Settings
@@ -20,6 +22,33 @@ def send_email(settings: Settings, to: str, subject: str, body: str, html_body: 
     """Deliver one plain-text email. Never raises: it runs after the HTTP response was sent."""
     if settings.email_backend == "console":
         logger.warning("EMAIL (console backend, NOT actually sent)\n  To: %s\n  Subject: %s\n\n%s", to, subject, body)
+        return
+
+    if settings.email_backend == "mailjet":
+        auth = base64.b64encode(f"{settings.smtp_username}:{settings.smtp_password}".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {auth}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "Messages": [{
+                "From": {"Email": settings.smtp_from, "Name": APP_NAME},
+                "To": [{"Email": to}],
+                "Subject": subject,
+                "TextPart": body
+            }]
+        }
+        if html_body:
+            data["Messages"][0]["HTMLPart"] = html_body
+            
+        try:
+            # We use httpx to send a simple POST request to Mailjet
+            with httpx.Client() as client:
+                response = client.post("https://api.mailjet.com/v3.1/send", headers=headers, json=data, timeout=15.0)
+                response.raise_for_status()
+                logger.info("Email sent via Mailjet (subject=%r)", subject)
+        except httpx.HTTPError as exc:
+            logger.error("Could not send email via Mailjet API (%s): %s", type(exc).__name__, exc)
         return
 
     message = EmailMessage()
