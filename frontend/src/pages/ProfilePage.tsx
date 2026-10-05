@@ -88,6 +88,11 @@ export default function ProfilePage() {
               <div><dt>Member since</dt><dd>{new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</dd></div>
             </dl>
 
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem', fontSize: '0.9rem', justifyContent: 'center' }}>
+              <Link to="/terms" style={{ color: 'inherit', opacity: 0.7 }}>Terms of Service</Link>
+              <Link to="/privacy" style={{ color: 'inherit', opacity: 0.7 }}>Privacy Policy</Link>
+            </div>
+
             <button type="button" className="danger" onClick={() => void onLogout()}>Log out</button>
           </section>
         </main>
