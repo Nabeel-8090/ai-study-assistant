@@ -26,13 +26,6 @@ if not settings.secret_key:
         "SECRET_KEY is not set. Add it to backend/.env. Generate one with:\n"
         '  python -c "import secrets; print(secrets.token_urlsafe(32))"'
     )
-if settings.email_backend == "console" and settings.cookie_secure:
-    raise RuntimeError(
-        "EMAIL_BACKEND=console only prints codes in the server log and is for development. "
-        "Set EMAIL_BACKEND=smtp (with the SMTP_* settings) when COOKIE_SECURE=true."
-    )
-if settings.email_backend == "console":
-    logger.warning("EMAIL_BACKEND=console: verification codes are printed here, not emailed.")
 
 
 @asynccontextmanager
