@@ -1,15 +1,7 @@
-"""Sending email. The only module that knows how mail is delivered.
-
-EMAIL_BACKEND=console  (development)  prints the email in the server terminal. Nothing is sent.
-EMAIL_BACKEND=smtp     (real)         sends through your SMTP server (Gmail, Brevo, ...).
-"""
+"""Sending email. The only module that knows how mail is delivered."""
 
 import httpx
 import logging
-import smtplib
-import ssl
-import base64
-from email.message import EmailMessage
 
 from ..core.config import Settings
 
@@ -20,86 +12,30 @@ APP_NAME = "RAGGG"
 
 def send_email(settings: Settings, to: str, subject: str, body: str, html_body: str = None) -> None:
     """Deliver one plain-text email. Never raises: it runs after the HTTP response was sent."""
-    if settings.email_backend == "console":
-        logger.warning("EMAIL (console backend, NOT actually sent)\n  To: %s\n  Subject: %s\n\n%s", to, subject, body)
-        return
 
-    if settings.email_backend == "mailjet":
-        auth = base64.b64encode(f"{settings.smtp_username}:{settings.smtp_password}".encode()).decode()
-        headers = {
-            "Authorization": f"Basic {auth}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "Messages": [{
-                "From": {"Email": settings.smtp_from, "Name": APP_NAME},
-                "To": [{"Email": to}],
-                "Subject": subject,
-                "TextPart": body
-            }]
-        }
-        if html_body:
-            data["Messages"][0]["HTMLPart"] = html_body
-            
-        try:
-            # We use httpx to send a simple POST request to Mailjet
-            with httpx.Client() as client:
-                response = client.post("https://api.mailjet.com/v3.1/send", headers=headers, json=data, timeout=15.0)
-                response.raise_for_status()
-                logger.info("Email sent via Mailjet (subject=%r)", subject)
-        except httpx.HTTPError as exc:
-            logger.error("Could not send email via Mailjet API (%s): %s", type(exc).__name__, exc)
-        return
-
-    if settings.email_backend == "brevo":
-        headers = {
-            "accept": "application/json",
-            "api-key": settings.smtp_password,
-            "content-type": "application/json"
-        }
-        data = {
-            "sender": {"email": settings.smtp_from, "name": APP_NAME},
-            "to": [{"email": to}],
-            "subject": subject,
-            "textContent": body
-        }
-        if html_body:
-            data["htmlContent"] = html_body
-            
-        try:
-            with httpx.Client() as client:
-                response = client.post("https://api.brevo.com/v3/smtp/email", headers=headers, json=data, timeout=15.0)
-                response.raise_for_status()
-                logger.info("Email sent via Brevo (subject=%r)", subject)
-        except httpx.HTTPError as exc:
-            logger.error("Could not send email via Brevo API (%s): %s", type(exc).__name__, exc)
-        return
-
-    message = EmailMessage()
-    message["From"] = f"{APP_NAME} <{settings.smtp_from}>"
-    message["To"] = to
-    message["Subject"] = subject
-    message.set_content(body)
+    # Always use Brevo
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.brevo_api_key,
+        "content-type": "application/json"
+    }
+    data = {
+        "sender": {"email": settings.brevo_sender_email, "name": APP_NAME},
+        "to": [{"email": to}],
+        "subject": subject,
+        "textContent": body
+    }
     if html_body:
-        message.add_alternative(html_body, subtype="html")
+        data["htmlContent"] = html_body
         
     try:
-        context = ssl.create_default_context()
-        if settings.smtp_port == 465:
-            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=15, context=context) as server:
-                if settings.smtp_username:
-                    server.login(settings.smtp_username, settings.smtp_password)
-                server.send_message(message)
-        else:
-            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as server:
-                server.starttls(context=context)
-                if settings.smtp_username:
-                    server.login(settings.smtp_username, settings.smtp_password)
-                server.send_message(message)
-        logger.info("Email sent (subject=%r)", subject)
-    except (smtplib.SMTPException, OSError) as exc:
-        # The error text comes from the mail server and never contains our password.
-        logger.error("Could not send email via SMTP (%s): %s", type(exc).__name__, exc)
+        with httpx.Client() as client:
+            response = client.post("https://api.brevo.com/v3/smtp/email", headers=headers, json=data, timeout=15.0)
+            response.raise_for_status()
+            logger.info("Email sent via Brevo (subject=%r)", subject)
+    except httpx.HTTPError as exc:
+        logger.error("Could not send email via Brevo API (%s): %s", type(exc).__name__, exc)
+    return
 
 
 def send_otp_email(settings: Settings, to: str, full_name: str, code: str, purpose: str) -> None:

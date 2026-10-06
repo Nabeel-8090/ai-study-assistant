@@ -30,12 +30,8 @@ class Settings:
     cookie_samesite: str = "lax"  # "lax" | "strict" | "none"
     # --- V03: email codes (OTP) and password reset ---
     secret_key: str = field(default="", repr=False)  # signs/hashes one-time codes
-    email_backend: str = "console"  # "console" | "smtp" | "mailjet" | "brevo"
-    smtp_host: str = ""
-    smtp_port: int = 587  # 587 = STARTTLS, 465 = implicit SSL
-    smtp_username: str = ""
-    smtp_password: str = field(default="", repr=False)
-    smtp_from: str = ""
+    brevo_api_key: str = ""
+    brevo_sender_email: str = ""
     otp_ttl_minutes: int = 10
     otp_max_attempts: int = 5  # wrong guesses allowed per code
     otp_resend_cooldown_seconds: int = 60
@@ -50,12 +46,8 @@ class Settings:
             raise ValueError("SESSION_LIFETIME_HOURS must be greater than zero.")
         if self.cookie_samesite not in {"lax", "strict", "none"}:
             raise ValueError("COOKIE_SAMESITE must be lax, strict or none.")
-        if self.email_backend not in {"console", "smtp", "mailjet", "brevo"}:
-            raise ValueError("EMAIL_BACKEND must be 'console', 'smtp', 'mailjet' or 'brevo'.")
-        if self.email_backend in ("smtp", "mailjet") and not (self.smtp_username and self.smtp_from):
-            raise ValueError(f"EMAIL_BACKEND={self.email_backend} needs SMTP_USERNAME and SMTP_FROM.")
-        if self.email_backend == "brevo" and not (self.smtp_password and self.smtp_from):
-            raise ValueError("EMAIL_BACKEND=brevo needs SMTP_PASSWORD (put API key here) and SMTP_FROM.")
+        if not (self.brevo_api_key and self.brevo_sender_email):
+            raise ValueError("BREVO_API_KEY and BREVO_SENDER_EMAIL are required to send emails.")
         if self.otp_ttl_minutes <= 0 or self.otp_max_attempts <= 0 or self.otp_max_sends_per_hour <= 0:
             raise ValueError("OTP_TTL_MINUTES, OTP_MAX_ATTEMPTS and OTP_MAX_SENDS_PER_HOUR must be greater than zero.")
         if self.otp_resend_cooldown_seconds < 0:
@@ -109,13 +101,8 @@ def get_settings() -> Settings:
         cookie_secure=_env_bool("COOKIE_SECURE", False),
         cookie_samesite=os.getenv("COOKIE_SAMESITE", "lax").strip().lower(),
         secret_key=os.getenv("SECRET_KEY", "").strip(),
-        email_backend=os.getenv("EMAIL_BACKEND", "console").strip().lower() or "console",
-        smtp_host=os.getenv("SMTP_HOST", "").strip(),
-        smtp_port=_env_int("SMTP_PORT", 587),
-        smtp_username=os.getenv("SMTP_USERNAME", "").strip(),
-        # Google shows app passwords with spaces ("abcd efgh ..."); they must be removed.
-        smtp_password=os.getenv("SMTP_PASSWORD", "").replace(" ", "").strip(),
-        smtp_from=(os.getenv("SMTP_FROM", "").strip() or os.getenv("SMTP_USERNAME", "").strip()),
+        brevo_api_key=os.getenv("BREVO_API_KEY", "").strip(),
+        brevo_sender_email=os.getenv("BREVO_SENDER_EMAIL", "").strip(),
         otp_ttl_minutes=_env_int("OTP_TTL_MINUTES", 10),
         otp_max_attempts=_env_int("OTP_MAX_ATTEMPTS", 5),
         otp_resend_cooldown_seconds=_env_int("OTP_RESEND_COOLDOWN_SECONDS", 60),
