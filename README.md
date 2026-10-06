@@ -174,3 +174,4 @@ See [Google's troubleshooting guide](https://ai.google.dev/gemini-api/docs/troub
   and that `ALLOWED_ORIGIN` matches the URL in your browser's address bar. If you get a 502, read the
   backend terminal for the upstream status. A 503 reports availability or configuration,
   429 reports quota, and 504 reports a timeout. Logs omit raw provider payloads and chat content.
+

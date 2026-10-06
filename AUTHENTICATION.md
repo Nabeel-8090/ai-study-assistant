@@ -101,3 +101,4 @@ test database only; the safety check refuses any database not named `*_test`.
 
 No rate limiting / lockout on login itself (only the emailed codes are limited), fixed (non-sliding)
 session expiry, the username-availability check is public (lets people test whether a username exists).
+
