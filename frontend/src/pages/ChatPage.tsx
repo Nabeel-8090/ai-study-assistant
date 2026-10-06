@@ -519,21 +519,45 @@ export default function ChatPage() {
               title="Resize sidebar"
             />
           )}
-          <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <SidebarToggleBtn onClick={() => setSidebarOpen(false)} />
-              <h2 style={{ fontSize: '1.1rem', margin: 0, fontWeight: 600 }}>History</h2>
             </div>
-            <button type="button" onClick={() => { navigate('/'); handleSidebarNav() }} style={{ padding: '6px', background: 'transparent', color: 'var(--text-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-secondary)'} title="New Chat">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button 
+              type="button" 
+              onClick={() => { navigate('/'); handleSidebarNav() }} 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                padding: '8px 12px', 
+                background: 'transparent', 
+                color: 'var(--text-primary)', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                transition: 'background-color 0.2s ease'
+              }} 
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'var(--bg-tertiary)';
+              }} 
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }} 
+              title="New Chat"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 20h9"></path>
                 <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
               </svg>
+              New chat
             </button>
           </div>
           <div className="sidebar-list">
             {conversations.length > 0 && (
-              <div style={{ padding: '0 0.75rem', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Recents</div>
+              <div style={{ padding: '0 0.75rem', marginTop: '2.5rem', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Recents</div>
             )}
             {conversations.map(c => (
               <SidebarItem key={c.id} c={c} isActive={c.id === conversationId} onDelete={handleDeleteChat} onClick={handleSidebarNav} />
